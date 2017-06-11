@@ -124,8 +124,8 @@ book.mobi: book.epub img/cover.png
 
 docbook: $(foreach CHAP,$(CHAPTERS),$(CHAP).xml)
 
-%.xml: %.txt
-	asciidoc --backend=docbook -o $@ $<
+%.xml: %.txt asciidoc_xml.conf
+	asciidoc -f asciidoc_xml.conf --backend=docbook -o $@ $<
 
 json: $(foreach CHAP,$(CHAPTERS),$(CHAP).json)
 
