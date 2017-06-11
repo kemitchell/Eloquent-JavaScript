@@ -17,6 +17,7 @@
   "devDependencies": {
     "canvas": "git://github.com/learnboost/node-canvas",
     "contextify": "kkoopa/contextify",
+    "image-to-ascii-cli": "^1.0.6",
     "jsdom": "0.10",
     "jszip": "2",
     "node-expat": "^2.3.15",

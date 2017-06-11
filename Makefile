@@ -131,3 +131,8 @@ json: $(foreach CHAP,$(CHAPTERS),$(CHAP).json)
 
 %.json: %.xml
 	./docbook-to-json < $< > $@
+
+asciiimages: $(patsubst %png,%ascii,$(patsubst img/%.svg,img/generated/%.png,$(SVGS)))
+
+%.ascii: %.png
+	./node_modules/.bin/image-to-ascii -i $< > $@
