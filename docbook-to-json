@@ -40,6 +40,8 @@ var nested = {
   hint: {element: 'hint'}
 }
 
+var preserveSpace = ['screen', 'programlisting']
+
 process.stdin
   .on('error', function (error) {
     console.error(error)
@@ -53,11 +55,6 @@ process.stdin
             ? nested[name](attributes)
             : JSON.parse(JSON.stringify(nested[name]))
           object.content = []
-          if (!current[0].content.push) {
-            console.log('%s is %j', 'name', name)
-            console.log('%s is %j', 'names', names)
-            process.exit(1)
-          }
           current[0].content.push(object)
           current.unshift(object)
         } else if (
@@ -88,12 +85,16 @@ process.stdin
           within('*', 'attribution', 'blockquote')
         ) {
           current[0].attribution += text.replace(/\s+/g, ' ')
-        } else if (within('screen')) {
+        } else if (
+          preserveSpace.some(function (e) {
+            return within(e)
+          })
+        ) {
           current[0].content += text
-        } else if (names[0] === 'sinpara') {
+        } else if (within('simpara')) {
           pushText(text, true)
         } else if (nested.hasOwnProperty(names[0])) {
-          pushText(text)
+          pushText(text, false)
         }
       })
       .on('end', function () {
@@ -109,13 +110,15 @@ function pushText (text, keepSpace) {
   if (keepSpace || text.trim()) {
     if (current[0].content.length === 0) {
         current[0].content.push(
-          collapseSpace(text.replace(/^\s+/, ''))
+          text.replace(/^\s+/, '')
         )
     } else {
       var content = current[0].content
       var last = content.length - 1
       if (typeof content[last] === 'string') {
-        content[last] = content[last] + collapseSpace(text)
+        content[last] = (
+          content[last] + collapseSpace(text)
+        )
       } else {
         content.push(collapseSpace(text))
       }
