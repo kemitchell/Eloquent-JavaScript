@@ -27,3 +27,5 @@
 /epub/content.opf
 /book.epub
 /book.mobi
+*.xml
+*.json
