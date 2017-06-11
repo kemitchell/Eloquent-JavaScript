@@ -1,0 +1,124 @@
+#!/usr/bin/env node
+
+var Parser = require('node-expat').Parser
+
+var article = {content: []}
+var names = []
+var current = [article]
+
+var nested = {
+  blockquote: {
+    element: 'blockquote',
+    attribution: ''
+  },
+  simpara: {element: 'p'},
+  screen: {element: 'pre'},
+  section: {element: 'section'},
+  programlisting: function (attributes) {
+    return {
+      element: 'listing',
+      numbered: attributes.linenumbering !== 'unnumbered'
+    }
+  },
+  superscript: {element: 'superscript'},
+  emphasis: {element: 'em'},
+  literal: {element: 'literal'},
+  ulink: {element: 'reference'},
+  itemizedlist: {element: 'ul'},
+  orderedlist: {element: 'ol'},
+  listitem: {element: 'item'},
+  informaltable: {element: 'table'},
+  tbody: {element: 'tbody'},
+  row: {element: 'tr'},
+  entry: function (attributes) {
+    return {
+      element: 'td',
+      align: attributes.align,
+      valign: attributes.valign
+    }
+  }
+}
+
+process.stdin
+  .on('error', function (error) {
+    console.error(error)
+    process.exit(1)
+  })
+  .pipe(
+    new Parser('UTF-8')
+      .on('startElement', function (name, attributes) {
+        if (nested.hasOwnProperty(name)) {
+          var object = typeof nested[name] === 'function'
+            ? nested[name](attributes)
+            : JSON.parse(JSON.stringify(nested[name]))
+          object.content = []
+          if (!current[0].content.push) {
+            console.log('%s is %j', 'name', name)
+            console.log('%s is %j', 'names', names)
+            process.exit(1)
+          }
+          current[0].content.push(object)
+          current.unshift(object)
+        } else if (
+          name === 'imagedata' &&
+          within('imageobject', 'mediaobject', 'informalfigure')
+        ) {
+          current[0].content.push({
+            element: 'img',
+            src: attributes.fileref
+          })
+        }
+        names.unshift(name)
+      })
+      .on('endElement', function (name) {
+        if (name === 'blockquote') {
+          current[0].attribution = current[0].attribution.trim()
+          current.shift()
+        } else if (nested.hasOwnProperty(name)  ) {
+          current.shift()
+        }
+        names.shift()
+      })
+      .on('text', function (text) {
+        if (within('title')) {
+          current[0].title = text
+        } else if (
+          within('attribution', 'blockquote') ||
+          within('*', 'attribution', 'blockquote')
+        ) {
+          current[0].attribution += text.replace(/\s+/g, ' ')
+        } else if (within('simpara')) {
+          var content = current[0].content
+          var last = content.length - 1
+          if (typeof content[last] === 'string') {
+            content[last] = content[last] + text.replace(/\s+/g, ' ')
+          } else {
+            content.push(text.replace(/\s+/g, ' '))
+          }
+        } else if (within('emphasis')) {
+          current[0].content.push(text.replace(/\s+/g, ' '))
+        } else if (within('superscript')) {
+          current[0].content.push(text.replace(/\s+/g, ' '))
+        } else if (within('literal')) {
+          current[0].content.push(text.replace(/\s+/g, ' '))
+        } else if (within('screen')) {
+          current[0].content += text
+        } else if (within('ulink')) {
+          current[0].content += text
+        }
+      })
+      .on('end', function () {
+        process.stdout.write(JSON.stringify(article, null, 2) + '\n')
+      })
+      .on('error', function (error) {
+        console.error(error)
+        process.exit(1)
+      })
+  )
+
+function within () {
+  var args = Array.prototype.slice.call(arguments)
+  return args.every(function (arg, index) {
+    return arg === '*' || names[index] === arg
+  })
+}

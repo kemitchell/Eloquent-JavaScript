@@ -370,7 +370,7 @@ possible to represent them as a sequence of numbers. When comparing
 strings, JavaScript goes over them from left to right, comparing the
 numeric codes of the characters one by one.
 
-(((equality)))(((>= operator)))(((pass:[<=] operator)))(((==
+(((equality)))(((>= operator)))(((pass:[&lt;=] operator)))(((==
 operator)))(((!= operator)))Other similar operators are `>=` (greater
 than or equal to), `<=` (less than or equal to), `==` (equal to), and
 `!=` (not equal to).

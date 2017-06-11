@@ -15,10 +15,11 @@
     "uglify-js": "2"
   },
   "devDependencies": {
+    "canvas": "git://github.com/learnboost/node-canvas",
     "contextify": "kkoopa/contextify",
     "jsdom": "0.10",
-    "canvas": "git://github.com/learnboost/node-canvas",
-    "promise": "6",
-    "jszip": "2"
+    "jszip": "2",
+    "node-expat": "^2.3.15",
+    "promise": "6"
   }
 }

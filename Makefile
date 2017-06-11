@@ -121,3 +121,13 @@ epubcheck: book.epub
 
 book.mobi: book.epub img/cover.png
 	ebook-convert book.epub book.mobi --output-profile=kindle --cover=img/cover.png --remove-first-image
+
+docbook: $(foreach CHAP,$(CHAPTERS),$(CHAP).xml)
+
+%.xml: %.txt
+	asciidoc --backend=docbook -o $@ $<
+
+json: $(foreach CHAP,$(CHAPTERS),$(CHAP).json)
+
+%.json: %.xml
+	./docbook-to-json < $< > $@
