@@ -105,6 +105,10 @@ process.stdin
           current[0].content += text
         } else if (within('ulink')) {
           current[0].content += text
+        } else if (nested.hasOwnProperty(names[0])) {
+          if (text.trim()) {
+            current[0].content.push(text.replace(/\s+/g, ' '))
+          }
         }
       })
       .on('end', function () {
