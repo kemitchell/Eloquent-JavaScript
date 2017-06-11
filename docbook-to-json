@@ -36,7 +36,8 @@ var nested = {
       align: attributes.align,
       valign: attributes.valign
     }
-  }
+  },
+  hint: {element: 'hint'}
 }
 
 process.stdin
@@ -87,28 +88,12 @@ process.stdin
           within('*', 'attribution', 'blockquote')
         ) {
           current[0].attribution += text.replace(/\s+/g, ' ')
-        } else if (within('simpara')) {
-          var content = current[0].content
-          var last = content.length - 1
-          if (typeof content[last] === 'string') {
-            content[last] = content[last] + text.replace(/\s+/g, ' ')
-          } else {
-            content.push(text.replace(/\s+/g, ' '))
-          }
-        } else if (within('emphasis')) {
-          current[0].content.push(text.replace(/\s+/g, ' '))
-        } else if (within('superscript')) {
-          current[0].content.push(text.replace(/\s+/g, ' '))
-        } else if (within('literal')) {
-          current[0].content.push(text.replace(/\s+/g, ' '))
         } else if (within('screen')) {
           current[0].content += text
-        } else if (within('ulink')) {
-          current[0].content += text
+        } else if (names[0] === 'sinpara') {
+          pushText(text, true)
         } else if (nested.hasOwnProperty(names[0])) {
-          if (text.trim()) {
-            current[0].content.push(text.replace(/\s+/g, ' '))
-          }
+          pushText(text)
         }
       })
       .on('end', function () {
@@ -119,6 +104,28 @@ process.stdin
         process.exit(1)
       })
   )
+
+function pushText (text, keepSpace) {
+  if (keepSpace || text.trim()) {
+    if (current[0].content.length === 0) {
+        current[0].content.push(
+          collapseSpace(text.replace(/^\s+/, ''))
+        )
+    } else {
+      var content = current[0].content
+      var last = content.length - 1
+      if (typeof content[last] === 'string') {
+        content[last] = content[last] + collapseSpace(text)
+      } else {
+        content.push(collapseSpace(text))
+      }
+    }
+  }
+}
+
+function collapseSpace (string) {
+  return string.replace(/\s+/g, ' ')
+}
 
 function within () {
   var args = Array.prototype.slice.call(arguments)

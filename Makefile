@@ -129,7 +129,7 @@ docbook: $(foreach CHAP,$(CHAPTERS),$(CHAP).xml)
 
 json: $(foreach CHAP,$(CHAPTERS),$(CHAP).json)
 
-%.json: %.xml
+%.json: %.xml docbook-to-json
 	./docbook-to-json < $< > $@
 
 asciiimages: $(patsubst %png,%ascii,$(patsubst img/%.svg,img/generated/%.png,$(SVGS)))
